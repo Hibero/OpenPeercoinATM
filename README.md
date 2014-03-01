@@ -1,4 +1,4 @@
-openpeercoinatm
+OpenPeercoinATM
 ==============
 
 Open Peercoin ATM - An open-source Peercoin ATM based on Mayo Smith's Open Bitcoin ATM.
