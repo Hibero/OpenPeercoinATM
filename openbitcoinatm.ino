@@ -151,7 +151,16 @@ void loop(){
       return;
  
      if(pulseCount == DOLLAR_PULSE)
-       getNextBitcoin(); //dollar baby!
+       if((millis() - pulseTime) < PULSE_TIMEOUT)
+         getNextBitcoin(); //dollar baby!
+         
+       else if(pulseCount == 5 * DOLLAR_PULSE)
+           if((millis() - pulseTime) < PULSE_TIMEOUT)
+             getNext5Bitcoin(); //5 dollars baby!
+           
+           else if(pulseCount == 10 * DOLLAR_PULSE)
+             getNext10Bitcoin(); //10 Dollars baby
+       
        
      //----------------------------------------------------------
      // Add additional currency denomination logic here: $5, $10, $20      
