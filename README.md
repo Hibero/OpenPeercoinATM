@@ -1,9 +1,8 @@
-openbitcoinatm
+openpeercoinatm
 ==============
 
-Open Bitcoin ATM -- The worlds first completely open-source Bitcoin ATM for Education and Experimentation.
+Open Peercoin ATM - An open-source Peercoin ATM based on Mayo Smith's Open Bitcoin ATM.
 
-See it in action here: http://youtu.be/A4KvAgJx4GU
+See the original Open Bitcoin ATM in action here: http://youtu.be/A4KvAgJx4GU
 
-Step by step tutorial here: http://openbitcoinatm.org
 
