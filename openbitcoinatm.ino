@@ -62,7 +62,9 @@
  
  const int DOLLAR_PULSE = 4; //pulses per dollar
  const int PULSE_TIMEOUT = 2000; //ms before pulse timeout
- const int MAX_PEERCOINS = 10; //max ppc per SD card
+ const int MAX_1PEERCOINS = 10; //max $1 ppc per SD card
+ const int MAX_5PEERCOINS = 10; //max $5 ppc per SD card
+ const int MAX_10PEERCOINS = 10; //max $10 ppc per SD card
  const int HEADER_LEN = 25; //maximum size of bitmap header
  
  #define SET_RTCLOCK      1 // Set to true to set Peercoin transaction log clock to program compile time.
@@ -73,7 +75,7 @@
  
  RTC_DS1307 RTC; // define the Real Time Clock object
 
- char LOG_FILE[] = "ppclog.txt"; //name of Peercoin transaction log file
+ char LOG_FILE[] = "peerlog.txt"; //name of Peercoin transaction log file
  
  const int chipSelect = 10; //SD module
  
@@ -146,24 +148,19 @@ void loop(){
     if(pulseCount == 0)
      return;
  
-    if((millis() - pulseTime) < PULSE_TIMEOUT) 
+    if((millis() - pulseTime) < PULSE_TIMEOUT) //should not let the code continue to the next part(the one right below) until the timer is past timeout
       return;
- 
-     if(pulseCount == DOLLAR_PULSE)
-       if((millis() - pulseTime) < PULSE_TIMEOUT)
-         getNextPeercoin(); //dollar baby!
-         
-       else if(pulseCount == 5 * DOLLAR_PULSE)
-           if((millis() - pulseTime) < PULSE_TIMEOUT)
-             getNext5Peercoin(); //5 dollars baby!
-           
-           else if(pulseCount == 10 * DOLLAR_PULSE)
-             getNext10Peercoin(); //10 dollars baby
        
-       
-     //----------------------------------------------------------
-     // Add additional currency denomination logic here: $5, $10, $20      
-     //----------------------------------------------------------
+     if(pulseCount == DOLLAR_PULSE){
+       getNextPeercoin(1);
+     }
+     
+     else if(pulseCount == 5 * DOLLAR_PULSE){
+       getNextPeercoin(5);
+     }
+     else if(pulseCount == 10 * DOLLAR_PULSE){
+       getNextPeercoin(10)
+     }
    
      pulseCount = 0; // reset pulse count
      pulseTime = 0;
@@ -192,7 +189,7 @@ getNextPeercoin
 
 ******************************************************/
 
-int getNextPeercoin(){
+int getNextPeercoin(amount){
     
   int PPCNumber = 0, i = 0;
  // long counter = 0;
@@ -201,11 +198,25 @@ int getNextPeercoin(){
 
        
     Serial.println("card initialized.");
- 
+    
+    /*
+    
+     Finds the max amount of Peercoins for the corresponding denomination
+    
+    */
+    
+    int MAX_PEERCOINS = 0;
+    if(amount  == 1)
+      MAX_PEERCOINS = MAX_1PEERCOINS;
+    else if(amount == 5)
+      MAX_PEERCOINS == MAX_5PEERCOINS;
+    else
+      MAX_PEERCOINS = MAX_10PEERCOINS;
+    
     while(PPCNumber<MAX_PEERCOINS){
       
          //prepend file name
-         String temp = "PPC_";
+         String temp = "PPC" + amount + "_";
          //add file number
          temp.concat(PPCNumber);
          //append extension
@@ -266,168 +277,6 @@ int getNextPeercoin(){
     PPCNumber++;
     }
 }  
-
-/*****************************************************
-getNext5Peercoin
-- Read next Peercoin QR Code from SD Card
-
-******************************************************/
-
-int getNext5Peercoin(){
-    
-  int PPC5Number = 0, i = 0;
- // long counter = 0;
- char cBuf, cPrev;
-  
-
-       
-    Serial.println("card initialized.");
- 
-    while(PPC5Number<MAX_5PEERCOINS){
-      
-         //prepend file name
-         String temp = "PPC5_";
-         //add file number
-         temp.concat(PPC5Number);
-         //append extension
-         temp.concat(".btc"); 
-         
-         //char array
-         char filename[temp.length()+1];   
-         temp.toCharArray(filename, sizeof(filename));
-        
-         //check if the Peercoin QR code exist on the SD card
-         if(SD.exists(filename)){
-             Serial.print("file exists: ");
-             Serial.println(filename);
-             
-             //print logo at top of paper
-             if(SD.exists("logo.oba")){
-               printBitmap("logo.oba"); 
-             }  
-             
-               //----------------------------------------------------------
-               // Depends on Exchange Rate 
-               // May be removed during volitile Peercoin market periods
-               //----------------------------------------------------------
-             
-               ///printer->println("Value .002 PPC");
-
-             
-               //print QR code off the SD card
-               printBitmap(filename); 
-
-               printer->println("Official Peercoin Currency.");
-
-               printer->println("Keep secure.");
-
-               printer->println("Github.com/Hibero/OpenPeercoinATM");
-               
-               printer->println(" ");
-               printer->println(" ");
-               printer->println(" ");
-               printer->println(" ");
-
-
-          break; //stop looking, Peercoin file found
-         }  
-          else{
-            if (PPC5Number >= MAX_5PEERCOINS -1){
-              
-                //----------------------------------------------------------
-                // Disable bill acceptor when peercoins run out 
-                // pull low on Apex 5400 violet wire
-                //----------------------------------------------------------
-              
-            }  
-             Serial.print("file does not exist: ");
-             Serial.println(filename);        
-        }
-    //increment peercoin number
-    PPC5Number++;
-    }
-}
-
-/*****************************************************
-getNext10Peercoin
-- Read next Peercoin QR Code from SD Card
-
-******************************************************/
-
-int getNext10Peercoin(){
-    
-  int PPC10Number = 0, i = 0;
- // long counter = 0;
- char cBuf, cPrev;
-  
-
-       
-    Serial.println("card initialized.");
- 
-    while(PPC10Number<MAX_10PEERCOINS){
-      
-         //prepend file name
-         String temp = "PPC10_";
-         //add file number
-         temp.concat(PPC10Number);
-         //append extension
-         temp.concat(".btc"); 
-         
-         //char array
-         char filename[temp.length()+1];   
-         temp.toCharArray(filename, sizeof(filename));
-        
-         //check if the Peercoin QR code exist on the SD card
-         if(SD.exists(filename)){
-             Serial.print("file exists: ");
-             Serial.println(filename);
-             
-             //print logo at top of paper
-             if(SD.exists("logo.oba")){
-               printBitmap("logo.oba"); 
-             }  
-             
-               //----------------------------------------------------------
-               // Depends on Exchange Rate 
-               // May be removed during volitile Peercoin market periods
-               //----------------------------------------------------------
-             
-               ///printer->println("Value .002 PPC");
-
-             
-               //print QR code off the SD card
-               printBitmap(filename); 
-
-               printer->println("Official Peercoin Currency.");
-
-               printer->println("Keep secure.");
-
-               printer->println("Github.com/Hibero/OpenPeercoinATM");
-               
-               printer->println(" ");
-               printer->println(" ");
-               printer->println(" ");
-               printer->println(" ");
-
-
-          break; //stop looking, Peercoin file found
-         }  
-          else{
-            if (PPC10Number >= MAX_10PEERCOINS -1){
-              
-                //----------------------------------------------------------
-                // Disable bill acceptor when peercoins run out 
-                // pull low on Apex 5400 violet wire
-                //----------------------------------------------------------
-              
-            }  
-             Serial.print("file does not exist: ");
-             Serial.println(filename);        
-        }
-    //increment peercoin number
-    PPC10Number++;
-    }
-}
 
 /*****************************************************
 printBitmap(char *filename)
